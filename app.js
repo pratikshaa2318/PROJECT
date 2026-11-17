@@ -1,497 +1,328 @@
-// 1
+// DAA 
+
+// 1 
+
+n = int(input("Enter number of terms: "))
+
+a = 0
+b = 1
+steps = 0
+
+print("Fibonacci Series:")
+
+for i in range(n):
+    print(a, end=" ")
+    c = a + b
+    a = b
+    b = c
+    steps += 1
+
+print("\nStep Count:", steps)
+
+// 2 
+// A
+
+import heapq
+
+data = {'A': 5, 'B': 9, 'C': 12, 'D': 13}
+
+heap = [[v, k] for k, v in data.items()]
+heapq.heapify(heap)
+
+while len(heap) > 1:
+    a = heapq.heappop(heap)
+    b = heapq.heappop(heap)
+    heapq.heappush(heap, [a[0]+b[0], a[1]+b[1]])
+
+print("Huffman Encoding:", heap[0])
+
+// B
+
+jobs = [('A', 2, 100), ('B', 1, 50),
+        ('C', 2, 200), ('D', 1, 30)]
+
+jobs.sort(key=lambda x: x[2], reverse=True)
+
+result = [None] * 2
+profit = 0
+
+for job in jobs:
+    for j in range(job[1]-1, -1, -1):
+        if result[j] == None:
+            result[j] = job[0]
+            profit += job[2]
+            break
+
+print("Selected Jobs:", result)
+print("Maximum Profit:", profit)
+
+// 3 
+weight = [10, 20, 30]
+profit = [60, 100, 120]
+
+capacity = 50
+total = 0
+
+ratio = []
+
+for i in range(len(weight)):
+    ratio.append((profit[i] / weight[i], i))
+
+ratio.sort(reverse=True)
+
+for r, i in ratio:
+    if weight[i] <= capacity:
+        total += profit[i]
+        capacity -= weight[i]
+    else:
+        total += r * capacity
+        break
+
+print("Maximum Profit:", total)
+
+// 4 
+
+weight = [1, 3, 4, 5]
+profit = [1, 4, 5, 7]
+
+capacity = 7
+n = len(weight)
+
+dp = [[0 for j in range(capacity + 1)]
+      for i in range(n + 1)]
+
+for i in range(1, n + 1):
+    for j in range(capacity + 1):
+
+        if weight[i-1] <= j:
+            dp[i][j] = max(
+                profit[i-1] + dp[i-1][j-weight[i-1]],
+                dp[i-1][j]
+            )
+        else:
+            dp[i][j] = dp[i-1][j]
+
+print("Maximum Profit:", dp[n][capacity])
+
+// 5 
+
+n = 8
+board = [[0 for j in range(n)] for i in range(n)]
+
+board[0][0] = 1
+
+def safe(row, col):
+
+    for i in range(row):
+        if board[i][col] == 1:
+            return False
+
+    for i, j in zip(range(row-1, -1, -1),
+                    range(col-1, -1, -1)):
+        if board[i][j] == 1:
+            return False
+
+    for i, j in zip(range(row-1, -1, -1),
+                    range(col+1, n)):
+        if board[i][j] == 1:
+            return False
+
+    return True
+
+
+def solve(row):
+
+    if row == n:
+        return True
+
+    for col in range(n):
+
+        if safe(row, col):
+            board[row][col] = 1
+
+            if solve(row + 1):
+                return True
+
+            board[row][col] = 0
+
+    return False
+
+
+if solve(1):
+    print("8 Queens Solution:")
+
+    for row in board:
+        print(row)
+else:
+    print("No Solution")
+
+
+
+
+// ML
+
+// 1 
 
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error
 
-df=pd.read_csv("archive.zip")
-df
+data = {
+    'pickup': [1,2,3,4,5,6,7,8,9,10],
+    'drop': [2,3,4,5,6,7,8,9,10,11],
+    'fare': [50,60,70,80,90,100,110,120,130,140]
+}
 
-df.isnull()
+df = pd.DataFrame(data)
 
-df.isnull().sum()
+X = df[['pickup','drop']]
+y = df['fare']
 
-df.describe()
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
 
-df.size
-
-df.ndim
-
-df.shape
-
-df.info()
-
-df["study_hours_per_week"]=df["study_hours_per_week"].astype(int)
-df
-
-df["attendance_rate"]=df["attendance_rate"].astype(int)
-df
-
-df["gender"]=df["gender"].replace({"Female":0,"Male":1})
-df
+for model in [LinearRegression(), RandomForestRegressor(n_estimators=10)]:
+    model.fit(X_train, y_train)
+    p = model.predict(X_test)
+    print("R2:", r2_score(y_test, p))
+    print("RMSE:", mean_squared_error(y_test, p)**0.5)
 
 // 2
-import pandas as pd
+
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 
-data={
-    'student_id':[1,2,3,4,5,6,7,8,9,10],
-    'math':[78, 85, np.nan, 90, 120, 65, 70, 200, 88, 76],
-    'science':[80, 88, 92, np.nan, 85, 60, 75, 95, 89, 77],
-    'english':[75, 82, 78, 85, 90, np.nan, 72, 88, 91, 79],
-    'attendence':[85, 90, 95, 80, 105, 70, 75, 60, np.nan, 88]
-}
-df=pd.DataFrame(data)
-df
+X = np.array([
+    [1,2], [2,3], [3,2],
+    [8,9], [9,8], [8,8],
+    [4,5], [5,4], [5,5]
+])
 
+wcss = []
 
-df.isnull().sum()
+for i in range(1, 6):
+    km = KMeans(n_clusters=i, random_state=42, n_init=10)
+    km.fit(X)
+    wcss.append(km.inertia_)
 
-
-df.fillna(df.mean(numeric_only=True),inplace=True)
-df
-
-
-df['math']=df['math'].clip(0,100)
-df
-
-
-df.boxplot()
+plt.plot(range(1,6), wcss, marker='o')
+plt.xlabel("Clusters")
+plt.ylabel("WCSS")
 plt.show()
 
+km = KMeans(n_clusters=3, random_state=42, n_init=10)
+print("Clusters:", km.fit_predict(X))
 
-newdf=df[(df['science']>65) & (df['attendence']>75)]
-newdf.boxplot()
-plt.show()
-
-
-df['attendence_log']=np.log(df['attendence'])
-df
 
 // 3 
 
-import pandas as pd
-
-# Load Iris dataset directly
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data"
-
-df = pd.read_csv(url, header=None)
-
-# Display dataset
-print(df)
-
-# Display columns
-print(df.columns)
-
-# Display species
-print(df[4])
-
-# Count species
-print(df[4].value_counts())
-
-# Statistical details
-print(df.describe())
-
-# Species description
-print(df[4].describe())
-
-# Petal width description
-print(df[3].describe())
-
-# Group by species
-print(df.groupby(4).describe())
-
-# Sum of grouped statistics
-print(df.groupby(4).describe().sum())
-
-// or 
-
-import pandas as pd
-import zipfile
-
-with zipfile.ZipFile("iris.zip") as z:
-    df = pd.read_csv(z.open("iris.data"), header=None)
-
-df
-#step 2
-df.columns
-#step 3
-df[4]
-#step 4
-df[4].value_counts()
-#step 5
-df.describe()
-#step 6
-df[4].describe()
-#step 7
-df[3].describe()
-#step 8
-df.groupby(4).describe()
-#step 9
-df.groupby(4).describe().sum()
-
-// 4
-
-# Step 1: Import Libraries
-import pandas as pd
-import numpy as np
-
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-
-# Step 2: Load Dataset
-url = "https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv"
-df = pd.read_csv(url)
-
-# Step 3: Display Dataset
-print("Dataset:")
-display(df.head())
-
-print("Dataset Shape:", df.shape)
-print("Columns:", df.columns)
-
-# Step 4: Rename Column and Add ID
-df.rename(columns={'b': 'black'}, inplace=True)
-df.insert(0, 'ID', range(1, len(df) + 1))
-
-# Step 5: Separate Independent and Dependent Variables
-x = df[['ID', 'crim', 'zn', 'indus', 'chas', 'nox', 'rm',
-        'age', 'dis', 'rad', 'tax', 'ptratio', 'black', 'lstat']]
-
-y = df['medv']
-
-# Step 6: Split Dataset
-x_train, x_test, y_train, y_test = train_test_split(
-    x, y, test_size=0.25, random_state=42
-)
-
-# Step 7: Create Linear Regression Model
-model = LinearRegression()
-
-# Step 8: Train Model
-model.fit(x_train, y_train)
-
-# Step 9: Predict Values
-y_pred = model.predict(x_test)
-
-print("Predicted Values:")
-print(y_pred)
-
-# Step 10: Calculate Model Score
-print("Training Score:", model.score(x_train, y_train))
-print("Testing Score:", model.score(x_test, y_test))
-
-# Step 11: Calculate RMSE
-rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-
-print("Root Mean Squared Error:", rmse)
-
-
-// 5
-
-# eimport pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix,accuracy_score,precision_score,recall_score
-
-# step 2: read the dataset
-df = pd.read_csv("Social_Network_Ads[1].csv")
-df
-
-# step 3: change the gender to numeric datatype
-df["Gender"]=df["Gender"].map({"Male":1,"Female":0})
-df
-
-# step 4: create x and y variables for test and train a model
-x = df[["User ID","Gender","Age","EstimatedSalary"]]
-y = df["Purchased"]
-x
-
-# step 5: split the dataset into testing and training variables 
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25,random_state=29)
-
-# step 6: create a model
-model = LogisticRegression()
-model.fit(x_train,y_train)
-
-# step 7: find out the predicted values
-y_pred = model.predict(x_test)
-y_pred
-
-# step 8 : Find out the all values asked in the question
-# model.score(x_train,y_train)
-# model.score(x,y)
-
-# cm = confusion_matrix(y_test,y_pred)
-# cm
-
-# a = accuracy_score(y_test,y_pred)
-# a
-
-# e = 1-a
-
-# p = precision_score(y_test,y_pred)
-# p
-
-# r = recall_score(y_test, y_pred)
-# r
-
-# Confusion Matrix
-cm = confusion_matrix(y_test, y_pred)
-
-print("Confusion Matrix:")
-print(cm)
-
-# TP, FP, TN, FN
-tn, fp, fn, tp = cm.ravel()
-
-print("True Positive (TP):", tp)
-print("False Positive (FP):", fp)
-print("True Negative (TN):", tn)
-print("False Negative (FN):", fn)
-
-# Accuracy
-a = accuracy_score(y_test, y_pred)
-print("Accuracy:", a)
-
-# Error Rate
-e = 1 - a
-print("Error Rate:", e)
-
-# Precision
-p = precision_score(y_test, y_pred)
-print("Precision:", p)
-
-# Recall
-r = recall_score(y_test, y_pred)
-print("Recall:", r)
-
-
-// 6
-
-import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import confusion_matrix,accuracy_score,precision_score,recall_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import *
 
-#step 2: load the csv file
-df=pd.read_csv("Iris.csv")
-df
+X = np.array([
+    [2,3], [3,4], [4,5], [5,6], [6,7],
+    [7,8], [8,9], [9,10], [1,2], [2,4],
+    [6,8], [7,9], [3,5], [8,10], [4,6]
+])
 
-#step 3: Separate input features and target variable
-# x -> Independent variables (features)
-# y -> Dependent variable (target/output class)
-x=df[['Id', 'SepalLengthCm', 'SepalWidthCm', 'PetalLengthCm', 'PetalWidthCm']]
-y=df['Species']
-x
+y = np.array([0,0,0,0,1,1,1,1,0,0,1,1,0,1,0])
 
-#step 4: split the dataset into training and testing sets
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2,random_state=30)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
 
-#step 5: create the model 
-model=GaussianNB()
-model.fit(x_train,y_train)
+model = KNeighborsClassifier(n_neighbors=3)
+model.fit(X_train, y_train)
 
-#step 6: predict the output
-y_pred=model.predict(x_test)
-y_pred
+p = model.predict(X_test)
 
-#step 7: calculate the score
-model.score(x_train,y_train)
+print("Confusion Matrix:\n", confusion_matrix(y_test,p))
+print("Accuracy:", accuracy_score(y_test,p))
+print("Error Rate:", 1-accuracy_score(y_test,p))
+print("Precision:", precision_score(y_test,p,zero_division=0))
+print("Recall:", recall_score(y_test,p,zero_division=0))
 
-#step 8: find out the score of original dataset
-model.score(x,y)
 
-# step 9: find out the confusion matrix
-cm=confusion_matrix(y_test,y_pred)
-cm
+// 4 
 
-#step 10: find out the values of fn tn fp tp
-total = np.sum(cm)
-
-for i in range(len(cm)):
-    TP = cm[i, i]
-    FP = np.sum(cm[:, i]) - TP
-    FN = np.sum(cm[i, :]) - TP
-    TN = total - (TP + FP + FN)
-    
-    print(f"\nClass {i}: TP={TP}, FP={FP}, FN={FN}, TN={TN}")
-
-#step 11:find out the accuracy
-a=accuracy_score(y_test,y_pred)
-a
-
-# step 12: error rate
-e=1-a
-e
-
-// 7
-
-import pandas as pd
 import numpy as np
-import nltk
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import *
 
-from nltk.tokenize import sent_tokenize
-from nltk.tokenize import word_tokenize
+X = np.array([
+    [600, 30], [700, 40], [500, 25], [800, 50],
+    [650, 35], [450, 20], [750, 45], [550, 28],
+    [900, 55], [400, 18], [720, 42], [480, 22],
+    [850, 52], [620, 32], [530, 26], [780, 48]
+])
 
-# Step 2: Download packages
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('stopwords')
-nltk.download('wordnet')
+y = np.array([1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,1])
 
-# Step 3: Open the text file
-file = open('sample.txt', 'r')
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, random_state=42)
 
-# Step 4: Read the file
-content = file.read()
-print(content)
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
 
-# Step 5: Sentence Tokenization
-sentence = sent_tokenize(content)
-print(sentence)
+model = MLPClassifier(hidden_layer_sizes=(10,), max_iter=1000,
+                      random_state=42)
 
-# Step 6: Word Tokenization
-Word = word_tokenize(content)
-print(Word)
+model.fit(X_train, y_train)
+p = model.predict(X_test)
 
-# Step 7: POS Tagging
-pos_tags = nltk.pos_tag(Word)
-print(pos_tags)
+print("Accuracy:", accuracy_score(y_test,p))
+print("Confusion Matrix:\n", confusion_matrix(y_test,p))
 
-# Custom Tokenizer
-from nltk.tokenize import RegexpTokenizer
-
-tokenize = RegexpTokenizer(r"\w+")
-wor = tokenize.tokenize(content)
-print(wor)
-
-# Step 8: POS Tagging
-pos_tags = nltk.pos_tag(Word)
-print(pos_tags)
-
-# Step 9: Import Stopwords
-from nltk.corpus import stopwords
-
-# Step 10: Get English Stopwords
-stop_word = set(stopwords.words('english'))
-print(stop_word)
-
-# Step 11: Remove Stopwords
-filter_word = [word for word in Word if word.lower() not in stop_word]
-print(filter_word)
-
-# Step 12: Stemming
-from nltk.stem import PorterStemmer
-
-stemmer = PorterStemmer()
-stemm_word = [stemmer.stem(word) for word in filter_word]
-print(stemm_word)
-
-# Step 13: Lemmatization
-from nltk.stem import WordNetLemmatizer
-
-lemm = WordNetLemmatizer()
-lemm_word = [lemm.lemmatize(word) for word in filter_word]
-print(lemm_word)
-
-# Step 14: Processed Text
-processed_text = " ".join(lemm_word)
-print(processed_text)
-
-# Step 15: Bag of Words
+// 5 
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
-vectorizer = CountVectorizer()
-tf_matrix = vectorizer.fit_transform([processed_text])
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
 
-print("Terms:", vectorizer.get_feature_names_out())
-print(tf_matrix.toarray())
+emails = [
+    "Win free money now",
+    "Congratulations you won a prize",
+    "Claim your free gift",
+    "Hello how are you",
+    "Let's meet tomorrow",
+    "Please send me notes",
+    "Free lottery prize",
+    "Call me later",
+    "Win cash today",
+    "How is your study"
+]
 
-# Step 16: TF-IDF
-from sklearn.feature_extraction.text import TfidfVectorizer
+y = [1,1,1,0,0,0,1,0,1,0]
 
-tfidf = TfidfVectorizer()
-tfidf_matrix = tfidf.fit_transform([processed_text])
+X = CountVectorizer().fit_transform(emails)
 
-print(tfidf_matrix.toarray())
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42)
 
-# Close file
-file.close()
+for model in [KNeighborsClassifier(n_neighbors=3), SVC()]:
+    model.fit(X_train, y_train)
+    p = model.predict(X_test)
+    print(type(model).__name__, "Accuracy:", accuracy_score(y_test,p))
 
-// 8
 
-import seaborn as sns
-import matplotlib.pyplot as plt 
-import pandas as pd
 
-#step 2: load the dataset
-df=sns.load_dataset('titanic')
-df
 
-#step 3:
-df.info()
 
-#step 4:
-df.describe()
 
-#step 5:
-df.columns
 
-# step 6:
-sns.countplot(x='survived',data=df)
-plt.title('servival count')
-plt.show()
 
-# step 7:
-sns.countplot(x='sex',hue='survived',data=df)
-plt.title("servival by gender")
-plt.show()
 
-# step 8:
-sns.histplot(df['fare'],bins=30,kde=True)
-plt.title("distribution of tickit Fare")
-plt.xlabel("Fare")
-plt.ylabel("Frequecy")
-plt.show()
 
-// 9
 
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-# Step_2
-df=sns.load_dataset('titanic')
-df
 
-# Step_3
-sns.boxplot(x='sex',y='age',hue='survived',data=df)
-plt.title('Age Distribution by Gender and Survival Status')
-plt.xlabel('Gender')
-plt.ylabel('Age')
-plt.show()
 
-// 10
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
-#step 2
-df=pd.read_csv("Iris.csv")
-df
-
-#step 3
-df.info()
-
-#step 4
-# using seaborn
-for i in df.columns[:-1]:
-    plt.figure(figsize=(6,4))
-    sns.histplot(df[i],kde=True,bins=10)
-
-#step 5
-for col in df.columns[1:-1]:
-    plt.figure(figsize=(6,4))
-    sns.boxplot(y=df[col])
-    plt.show()
