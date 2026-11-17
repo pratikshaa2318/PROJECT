@@ -164,6 +164,228 @@ else:
 // 1 
 
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score, mean_squared_error
+
+df = pd.read_csv("uber.csv")
+
+# Preprocessing
+df = df.dropna()
+df = df[(df.fare_amount > 0) & (df.passenger_count > 0)]
+
+# Calculate distance
+df['distance'] = np.sqrt(
+    (df.pickup_longitude - df.dropoff_longitude)**2 +
+    (df.pickup_latitude - df.dropoff_latitude)**2
+)
+
+# Features and target
+X = df[['passenger_count', 'distance']]
+y = df['fare_amount']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Linear Regression
+lr = LinearRegression()
+lr.fit(X_train, y_train)
+p1 = lr.predict(X_test)
+
+# Random Forest
+rf = RandomForestRegressor(n_estimators=10, random_state=42)
+rf.fit(X_train, y_train)
+p2 = rf.predict(X_test)
+
+# Evaluation
+print("Linear Regression R2:", r2_score(y_test, p1))
+print("Linear Regression RMSE:", np.sqrt(mean_squared_error(y_test, p1)))
+
+print("Random Forest R2:", r2_score(y_test, p2))
+print("Random Forest RMSE:", np.sqrt(mean_squared_error(y_test, p2)))
+
+# Correlation
+print(df.corr(numeric_only=True))
+
+# Outliers
+print(df['fare_amount'].describe())
+
+// 2 
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
+
+df = pd.read_csv("sales_data_sample.csv", encoding="latin1")
+
+# Select numerical columns
+X = df[['SALES', 'QUANTITYORDERED', 'PRICEEACH']]
+
+# Scaling
+X = StandardScaler().fit_transform(X)
+
+# Elbow Method
+wcss = []
+
+for i in range(1, 10):
+    km = KMeans(n_clusters=i, random_state=42, n_init=10)
+    km.fit(X)
+    wcss.append(km.inertia_)
+
+plt.plot(range(1, 10), wcss, marker='o')
+plt.xlabel("Number of Clusters")
+plt.ylabel("WCSS")
+plt.show()
+
+# K-Means
+km = KMeans(n_clusters=3, random_state=42, n_init=10)
+df['KMeans_Cluster'] = km.fit_predict(X)
+
+print("K-Means Clusters:")
+print(df['KMeans_Cluster'])
+
+# Hierarchical Clustering
+Z = linkage(X[:100], method='ward')
+
+dendrogram(Z)
+plt.show()
+
+clusters = fcluster(Z, 3, criterion='maxclust')
+print("Hierarchical Clusters:", clusters)
+
+// 3 
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score
+from sklearn.metrics import precision_score, recall_score
+
+df = pd.read_csv("diabetes.csv")
+
+X = df.drop('Outcome', axis=1)
+y = df['Outcome']
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Scaling
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# KNN Model
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+
+y_pred = knn.predict(X_test)
+
+# Evaluation
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Error Rate:", 1 - accuracy_score(y_test, y_pred))
+print("Precision:", precision_score(y_test, y_pred))
+print("Recall:", recall_score(y_test, y_pred))
+
+// 4 
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix
+
+df = pd.read_csv("Churn_Modelling.csv")
+
+# Features and target
+X = df.drop(['RowNumber', 'CustomerId', 'Surname', 'Exited'], axis=1)
+y = df['Exited']
+
+# Convert categorical data
+X = pd.get_dummies(X, drop_first=True)
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# Normalize data
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+# ANN Model
+model = MLPClassifier(
+    hidden_layer_sizes=(10, 5),
+    max_iter=500,
+    random_state=42
+)
+
+model.fit(X_train, y_train)
+
+# Prediction
+y_pred = model.predict(X_test)
+
+# Evaluation
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+// 5 
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+
+df = pd.read_csv("spam.csv", encoding="latin1")
+
+# Features and target
+X = df['v2']
+y = df['v1'].map({'ham': 0, 'spam': 1})
+
+# Convert text into numbers
+tfidf = TfidfVectorizer()
+X = tfidf.fit_transform(X)
+
+# Split data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+# KNN
+knn = KNeighborsClassifier(n_neighbors=5)
+knn.fit(X_train, y_train)
+p1 = knn.predict(X_test)
+
+# SVM
+svm = SVC()
+svm.fit(X_train, y_train)
+p2 = svm.predict(X_test)
+
+# Compare accuracy
+print("KNN Accuracy:", accuracy_score(y_test, p1))
+print("SVM Accuracy:", accuracy_score(y_test, p2))
+
+
+
+
+// 1 
+
+import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
@@ -315,6 +537,56 @@ for model in [KNeighborsClassifier(n_neighbors=3), SVC()]:
 
 
 
+// BC 
+
+// 1
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Bank {
+    uint balance;
+
+    function deposit() public payable {
+        balance += msg.value;
+    }
+
+    function withdraw(uint amount) public {
+        require(amount <= balance);
+        balance -= amount;
+        payable(msg.sender).transfer(amount);
+    }
+
+    function showBalance() public view returns(uint) {
+        return balance;
+    }
+}
+
+
+// 2
+
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract Student {
+
+    struct Data {
+        uint id;
+        string name;
+    }
+
+    Data[] students;
+
+    function add(uint id, string memory name) public {
+        students.push(Data(id, name));
+    }
+
+    function get(uint i) public view returns(uint, string memory) {
+        return (students[i].id, students[i].name);
+    }
+
+    fallback() external payable {}
+}
 
 
 
