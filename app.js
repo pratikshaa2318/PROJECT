@@ -32,9 +32,17 @@ heapq.heapify(heap)
 while len(heap) > 1:
     a = heapq.heappop(heap)
     b = heapq.heappop(heap)
-    heapq.heappush(heap, [a[0]+b[0], a[1]+b[1]])
 
-print("Huffman Encoding:", heap[0])
+    heapq.heappush(heap, [a[0] + b[0], [a[1], b[1]]])
+
+def print_codes(node, code=""):
+    if isinstance(node, str):
+        print(node, ":", code)
+    else:
+        print_codes(node[0], code + "0")
+        print_codes(node[1], code + "1")
+
+print_codes(heap[0][1])
 
 // B
 
